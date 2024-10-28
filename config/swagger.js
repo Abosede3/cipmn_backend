@@ -16,7 +16,7 @@ const options = {
                 description: 'Local server',
             }, 
             {
-                url: 'https://cipmn-api.onrender.com/api',
+                url: 'https://cipmn-backend.onrender.com/api',
                 description: 'Test server',
             }, 
         ],

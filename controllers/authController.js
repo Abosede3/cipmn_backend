@@ -69,6 +69,9 @@ const login = async (req, res) => {
         if (user.membership_id !== membership_id) {
             return res.status(400).json({ msg: 'Invalid credentials' });
         }
+
+        // remove password from user object
+        user.password = undefined;
         
         // const isMatch = await bcrypt.compare(password, user.password);
         // if (!isMatch) {
@@ -80,7 +83,7 @@ const login = async (req, res) => {
             expiresIn: '1h',
         });
 
-        res.json({ token, msg: 'Login successful' });
+        res.json({ token, msg: 'Login successful', data: user });
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ msg: 'Server error' });

@@ -4,9 +4,6 @@ const { User } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
-const { sendEmail } = require('../services/emailService');
-const { sendSMS } = require('../services/smsService');
-
 
 const register = async (req, res) => {
     
@@ -39,10 +36,6 @@ const register = async (req, res) => {
             role: 'member', 
         });
 
-        sendEmail(email, 'Welcome to Our Platform', `<p>Hello ${first_name},</p><p>Welcome to our platform!</p>`);
-        sendSMS(phone_number, 'Your verification code is 123456');
-
-        
         const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, {
             expiresIn: '1h',
         });

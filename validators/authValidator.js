@@ -27,7 +27,7 @@ const loginValidation = [
     body('email')
         .isEmail()
         .withMessage('A valid email is required'),
-    body('password')
+    body('membership_id')
         .notEmpty()
         .withMessage('Password is required'),
 ];

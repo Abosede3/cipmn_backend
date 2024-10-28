@@ -71,14 +71,14 @@ router.post('/register', registerValidation, validationResultHandler, authContro
  *             type: object
  *             required:
  *               - email
- *               - password
+ *               - membership_id
  *             properties:
  *               email:
  *                 type: string
  *                 format: email
- *               password:
+ *               membership_id:
  *                 type: string
- *                 format: password
+ *                 format: membership_id
  *     responses:
  *       200:
  *         description: Login successful

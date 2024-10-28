@@ -8,7 +8,7 @@ const routes = require('./routes');
 const ejs = require('ejs');
 
 const setupSwagger = require('./config/swagger');
-const { logger, pe } = require('./middleware/logger');
+const { logger, pe } = require('./middlewares/logger');
 
 // Set the port
 dotenv.config();

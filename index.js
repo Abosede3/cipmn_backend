@@ -18,7 +18,11 @@ const app = express();
 const server = http.createServer(app);
 
 // Middleware setup
-app.use(cors());
+app.use(cors({
+    origin: '*', // Allow all origins
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allow specific HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(logger);

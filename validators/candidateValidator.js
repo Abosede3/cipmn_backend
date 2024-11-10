@@ -9,12 +9,12 @@ const candidateValidation = [
     body('last_name')
         .notEmpty()
         .withMessage('Last name is required'),
-    body('position_id')
-        .isInt()
-        .withMessage('Position ID must be an integer'),
-    body('voting_year_id')
-        .isInt()
-        .withMessage('Voting year ID must be an integer'),
+    // body('position_id')
+    //     .isInt()
+    //     .withMessage('Position ID must be an integer'),
+    // body('voting_year_id')
+    //     .isInt()
+    //     .withMessage('Voting year ID must be an integer'),
 ];
 
 module.exports = {

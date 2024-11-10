@@ -31,7 +31,7 @@ const validationResultHandler = require('../middlewares/validationResultHandler'
  *       500:
  *         description: Server error
  */
-router.get('/', authMiddleware, userController.getAllUsers);
+router.get('/', userController.getAllUsers);
 
 /**
  * @swagger

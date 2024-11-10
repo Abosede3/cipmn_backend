@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "root",
-    "password": null,
-    "database": "cipmn",
-    "host": "127.0.0.1",
+    "username": "cipmn_voting",
+    "password": "n=Z(uJhrkb,K",
+    "database": "cipmn_voting",
+    "host": "131.153.147.90",
     "dialect": "mysql"
   },
   "test": {

@@ -152,6 +152,8 @@ exports.updateCandidate = async (req, res) => {
         candidate.last_name = last_name || candidate.last_name;
         candidate.photo = photo || candidate.photo;
 
+        console.log('Candidate:', candidate);
+
         await candidate.save();
 
         res.json({ msg: 'Candidate updated', candidate });

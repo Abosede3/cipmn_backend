@@ -129,8 +129,8 @@ router.get('/voting-year/:votingYearId', positionController.getPositionsByVoting
 router.put(
   '/:id',
   authMiddleware,
-  positionValidation,
-  validationResultHandler,
+  // positionValidation,
+  // validationResultHandler,
   positionController.updatePosition
 );
 

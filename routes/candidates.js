@@ -36,7 +36,11 @@ const validationResultHandler = require('../middlewares/validationResultHandler'
  *               - position_id
  *               - voting_year_id
  *             properties:
+ *               title:
+ *                 type: string
  *               first_name:
+ *                 type: string
+ *               middle_name:  
  *                 type: string
  *               last_name:
  *                 type: string
@@ -124,7 +128,11 @@ router.get('/position/:positionId', candidateController.getCandidatesByPosition)
  *           schema:
  *             type: object
  *             properties:
+ *               title:
+ *                 type: string
  *               first_name:
+ *                 type: string
+ *               middle_name:
  *                 type: string
  *               last_name:
  *                 type: string

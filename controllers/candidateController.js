@@ -4,6 +4,7 @@ const { Candidate, Position, VotingYear } = require('../models');
 const { validationResult } = require('express-validator');
 const multer = require('multer');
 const path = require('path');
+const { title } = require('process');
 const slugify = require('slugify');
 
 
@@ -72,7 +73,9 @@ exports.createCandidate = async (req, res) => {
         }
 
         const candidate = await Candidate.create({
+            title,
             first_name,
+            middle_name,
             last_name,
             photo,
             position_id,
@@ -129,7 +132,7 @@ exports.updateCandidate = async (req, res) => {
     }
 
     const { id } = req.params;
-    const { first_name, last_name } = req.body;
+    const { first_name, middle_name, last_name } = req.body;
     const photo = req.file ? req.file.filename : null;
 
     try {
@@ -149,6 +152,7 @@ exports.updateCandidate = async (req, res) => {
 
         
         candidate.first_name = first_name || candidate.first_name;
+        candidate.middle_name = middle_name || candidate.middle_name;
         candidate.last_name = last_name || candidate.last_name;
         candidate.photo = photo || candidate.photo;
 

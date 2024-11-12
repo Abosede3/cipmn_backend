@@ -23,9 +23,17 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Candidate.init({
+    title: {
+      type: DataTypes.STRING,
+      allowNull: true
+    },
     first_name: {
       type: DataTypes.STRING,
       allowNull: false
+    },
+    middle_name: {
+      type: DataTypes.STRING,
+      allowNull: true
     },
     last_name: {
       type: DataTypes.STRING,

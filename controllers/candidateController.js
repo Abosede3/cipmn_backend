@@ -105,6 +105,26 @@ exports.getAllCandidates = async (req, res) => {
     }
 };
 
+// get single candidate
+exports.getCandidate = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const candidate = await Candidate.findByPk(id, {
+            include: [
+                { model: Position },
+                { model: VotingYear },
+            ],
+        });
+        if (!candidate) {
+            return res.status(404).json({ msg: 'Candidate not found' });
+        }
+        res.json(candidate);
+    } catch (err) {
+        console.error('Get Candidate error:', err);
+        res.status(500).json({ msg: 'Server error' });
+    }
+}
 
 exports.getCandidatesByPosition = async (req, res) => {
     const { positionId } = req.params;

@@ -86,6 +86,27 @@ router.get('/', candidateController.getAllCandidates);
 
 /**
  * @swagger
+ * /candidates/{id}:
+ *   get:
+ *     summary: Get single candidates
+ *     tags: [Candidates]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Candidate ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Candidate found
+ *       500:
+ *         description: Server error
+ */
+router.get('/:id', candidateController.getCandidate);
+
+/**
+ * @swagger
  * /candidates/position/{positionId}:
  *   get:
  *     summary: Get candidates by position ID

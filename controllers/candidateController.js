@@ -57,7 +57,7 @@ exports.createCandidate = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { first_name, last_name, position_id, voting_year_id } = req.body;
+    const { title, first_name, last_name, middle_name, position_id, voting_year_id } = req.body;
     const photo = req.file ? req.file.filename : null;
 
     try {

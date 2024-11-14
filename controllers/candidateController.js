@@ -42,15 +42,15 @@ exports.uploadCandidatePhoto = (req, res, next) => {
 
 
 exports.createCandidate = async (req, res) => {
-    
+
     if (req.user.role !== 'admin') {
         return res.status(403).json({ msg: 'Access denied' });
     }
 
-    
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        
+
         if (req.file) {
             fs.unlinkSync(req.file.path);
         }
@@ -61,7 +61,7 @@ exports.createCandidate = async (req, res) => {
     const photo = req.file ? req.file.filename : null;
 
     try {
-        
+
         const position = await Position.findByPk(position_id);
         if (!position) {
             return res.status(400).json({ msg: 'Position does not exist' });
@@ -98,7 +98,18 @@ exports.getAllCandidates = async (req, res) => {
                 { model: VotingYear },
             ],
         });
-        res.json(candidates);
+
+        const candidatesWithPhotoUrl = candidates.map(candidate => {
+            const candidateData = candidate.toJSON();
+
+            candidateData.photo_url = candidate.photo
+                ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidate.photo}`
+                : null;
+
+            return candidateData;
+        });
+
+        res.json(candidatesWithPhotoUrl);
     } catch (err) {
         console.error('Get Candidates error:', err);
         res.status(500).json({ msg: 'Server error' });
@@ -119,7 +130,9 @@ exports.getCandidate = async (req, res) => {
         if (!candidate) {
             return res.status(404).json({ msg: 'Candidate not found' });
         }
-        res.json(candidate);
+        const candidateData = candidate.toJSON();
+        candidateData.photo = candidateData.photo ? `${req.protocol}://${req.host}/uploads/candidates/${candidateData.photo}` : null;
+        res.json(candidateData);
     } catch (err) {
         console.error('Get Candidate error:', err);
         res.status(500).json({ msg: 'Server error' });
@@ -137,7 +150,18 @@ exports.getCandidatesByPosition = async (req, res) => {
                 { model: VotingYear },
             ],
         });
-        res.json(candidates);
+
+        const candidatesWithPhotoUrl = candidates.map(candidate => {
+            const candidateData = candidate.toJSON();
+
+            candidateData.photo_url = candidate.photo
+                ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidate.photo}`
+                : null;
+
+            return candidateData;
+        });
+        
+        res.json(candidatesWithPhotoUrl);
     } catch (err) {
         console.error('Get Candidates by Position error:', err);
         res.status(500).json({ msg: 'Server error' });
@@ -146,7 +170,7 @@ exports.getCandidatesByPosition = async (req, res) => {
 
 
 exports.updateCandidate = async (req, res) => {
-    
+
     if (req.user.role !== 'admin') {
         return res.status(403).json({ msg: 'Access denied' });
     }
@@ -158,19 +182,19 @@ exports.updateCandidate = async (req, res) => {
     try {
         const candidate = await Candidate.findByPk(id);
         if (!candidate) {
-            
+
             if (req.file) {
                 fs.unlinkSync(req.file.path);
             }
             return res.status(404).json({ msg: 'Candidate not found' });
         }
 
-        
+
         if (photo && candidate.photo) {
             fs.unlinkSync(`public/uploads/candidates/${candidate.photo}`);
         }
 
-        
+
         candidate.first_name = first_name || candidate.first_name;
         candidate.middle_name = middle_name || candidate.middle_name;
         candidate.last_name = last_name || candidate.last_name;
@@ -189,7 +213,7 @@ exports.updateCandidate = async (req, res) => {
 
 
 exports.deleteCandidate = async (req, res) => {
-    
+
     if (req.user.role !== 'admin') {
         return res.status(403).json({ msg: 'Access denied' });
     }
@@ -202,7 +226,7 @@ exports.deleteCandidate = async (req, res) => {
             return res.status(404).json({ msg: 'Candidate not found' });
         }
 
-        
+
         if (candidate.photo) {
             fs.unlinkSync(`public/uploads/candidates/${candidate.photo}`);
         }

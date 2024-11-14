@@ -29,7 +29,7 @@ app.use(logger);
 
 // Setup static folder
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
+app.use(express.static(path.join(__dirname, 'public')));
 // Routes
 app.use('/', routes);
 

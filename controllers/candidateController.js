@@ -131,7 +131,7 @@ exports.getCandidate = async (req, res) => {
             return res.status(404).json({ msg: 'Candidate not found' });
         }
         const candidateData = candidate.toJSON();
-        candidateData.photo = candidateData.photo ? `${req.protocol}://${req.host}/uploads/candidates/${candidateData.photo}` : null;
+        candidateData.photo = candidateData.photo ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidateData.photo}` : null;
         res.json(candidateData);
     } catch (err) {
         console.error('Get Candidate error:', err);

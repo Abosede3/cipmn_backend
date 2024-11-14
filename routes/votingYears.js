@@ -178,4 +178,32 @@ router.put(
  */
 router.delete('/:id', authMiddleware, votingYearController.deleteVotingYear);
 
+/**
+ * @swagger
+ * /voting-years/{id}/set-active:
+ *   put:
+ *     summary: Set a voting year as active (Admin only)
+ *     tags: [VotingYears]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Voting Year ID
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Voting year set as active
+ *       403:
+ *         description: Access denied
+ *       404:
+ *         description: Voting year not found
+ *       500:
+ *         description: Server error
+ */
+router.put('/:id/set-active', authMiddleware, votingYearController.setActiveVotingYear);
+
+
 module.exports = router;

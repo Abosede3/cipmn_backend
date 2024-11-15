@@ -40,8 +40,12 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     photo: {
-      type: DataTypes.STRING,
-      allowNull: false
+      type: DataTypes.STRING(500),
+      allowNull: true
+    },
+    photo_public_id: {
+      type: DataTypes.STRING(200),
+      allowNull: true
     },
     position_id: {
       type: DataTypes.INTEGER,

@@ -1,74 +1,65 @@
-
+// controllers/candidateController.js
 
 const { Candidate, Position, VotingYear } = require('../models');
 const { validationResult } = require('express-validator');
-const multer = require('multer');
-const path = require('path');
-const { title } = require('process');
-const slugify = require('slugify');
+const cloudinary = require('../config/cloudinary');
+const { Op } = require('sequelize'); // If needed for queries
 
-
-const storage = multer.diskStorage({
-    destination: 'public/uploads/candidates/',
-    filename: (req, file, cb) => {
-        const filename = Date.now() + '-' + slugify(file.originalname, { lower: true });
-        cb(null, filename);
-    },
-});
-
-const upload = multer({
-    storage,
-    fileFilter: (req, file, cb) => {
-        const allowedTypes = /jpeg|jpg|png/;
-        const mimeType = allowedTypes.test(file.mimetype);
-        const extName = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        if (mimeType && extName) {
-            return cb(null, true);
-        } else {
-            cb('Error: Only images are allowed (jpeg, jpg, png)');
-        }
-    },
-}).single('photo');
-
+// Import the upload middleware
+const { uploadCandidatePhoto } = require('../middlewares/uploadMiddleware');
 
 exports.uploadCandidatePhoto = (req, res, next) => {
-    upload(req, res, function (err) {
+    uploadCandidatePhoto(req, res, function (err) {
         if (err) {
-            return res.status(400).json({ msg: err });
+            return res.status(400).json({ msg: err.message || err });
         }
+        console.log('File uploaded successfully');
+        console.log(req.file);
         next();
     });
 };
 
+// Helper function to delete image from Cloudinary
+const deleteImageFromCloudinary = async (publicId) => {
+    try {
+        await cloudinary.uploader.destroy(publicId);
+    } catch (error) {
+        console.error('Error deleting image from Cloudinary:', error);
+    }
+};
 
 exports.createCandidate = async (req, res) => {
-
     if (req.user.role !== 'admin') {
         return res.status(403).json({ msg: 'Access denied' });
     }
 
-
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-
-        if (req.file) {
-            fs.unlinkSync(req.file.path);
+        // Delete uploaded image from Cloudinary if validation fails
+        if (req.file && req.file.public_id) {
+            await deleteImageFromCloudinary(req.file.public_id);
         }
         return res.status(400).json({ errors: errors.array() });
     }
 
     const { title, first_name, last_name, middle_name, position_id, voting_year_id } = req.body;
-    const photo = req.file ? req.file.filename : null;
+    const photo = req.file ? req.file.path : null;
+    const photo_public_id = req.file ? req.file.public_id : null;
 
     try {
-
         const position = await Position.findByPk(position_id);
         if (!position) {
+            if (req.file && req.file.public_id) {
+                await deleteImageFromCloudinary(req.file.public_id);
+            }
             return res.status(400).json({ msg: 'Position does not exist' });
         }
 
         const votingYear = await VotingYear.findByPk(voting_year_id);
         if (!votingYear) {
+            if (req.file && req.file.public_id) {
+                await deleteImageFromCloudinary(req.file.public_id);
+            }
             return res.status(400).json({ msg: 'Voting year does not exist' });
         }
 
@@ -78,6 +69,7 @@ exports.createCandidate = async (req, res) => {
             middle_name,
             last_name,
             photo,
+            photo_public_id,
             position_id,
             voting_year_id,
         });
@@ -85,10 +77,12 @@ exports.createCandidate = async (req, res) => {
         res.status(201).json({ msg: 'Candidate created', candidate });
     } catch (err) {
         console.error('Create Candidate error:', err);
+        if (req.file && req.file.public_id) {
+            await deleteImageFromCloudinary(req.file.public_id);
+        }
         res.status(500).json({ msg: 'Server error' });
     }
 };
-
 
 exports.getAllCandidates = async (req, res) => {
     try {
@@ -99,24 +93,13 @@ exports.getAllCandidates = async (req, res) => {
             ],
         });
 
-        const candidatesWithPhotoUrl = candidates.map(candidate => {
-            const candidateData = candidate.toJSON();
-
-            candidateData.photo_url = candidate.photo
-                ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidate.photo}`
-                : null;
-
-            return candidateData;
-        });
-
-        res.json(candidatesWithPhotoUrl);
+        res.json(candidates);
     } catch (err) {
         console.error('Get Candidates error:', err);
         res.status(500).json({ msg: 'Server error' });
     }
 };
 
-// get single candidate
 exports.getCandidate = async (req, res) => {
     const { id } = req.params;
 
@@ -130,14 +113,12 @@ exports.getCandidate = async (req, res) => {
         if (!candidate) {
             return res.status(404).json({ msg: 'Candidate not found' });
         }
-        const candidateData = candidate.toJSON();
-        candidateData.photo = candidateData.photo ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidateData.photo}` : null;
-        res.json(candidateData);
+        res.json(candidate);
     } catch (err) {
         console.error('Get Candidate error:', err);
         res.status(500).json({ msg: 'Server error' });
     }
-}
+};
 
 exports.getCandidatesByPosition = async (req, res) => {
     const { positionId } = req.params;
@@ -151,69 +132,60 @@ exports.getCandidatesByPosition = async (req, res) => {
             ],
         });
 
-        const candidatesWithPhotoUrl = candidates.map(candidate => {
-            const candidateData = candidate.toJSON();
-
-            candidateData.photo_url = candidate.photo
-                ? `${req.protocol}://${req.get('host')}/uploads/candidates/${candidate.photo}`
-                : null;
-
-            return candidateData;
-        });
-        
-        res.json(candidatesWithPhotoUrl);
+        res.json(candidates);
     } catch (err) {
         console.error('Get Candidates by Position error:', err);
         res.status(500).json({ msg: 'Server error' });
     }
 };
 
-
 exports.updateCandidate = async (req, res) => {
-
     if (req.user.role !== 'admin') {
+        // Delete uploaded image from Cloudinary if access denied
+        if (req.file && req.file.public_id) {
+            await deleteImageFromCloudinary(req.file.public_id);
+        }
         return res.status(403).json({ msg: 'Access denied' });
     }
 
     const { id } = req.params;
     const { first_name, middle_name, last_name } = req.body;
-    const photo = req.file ? req.file.filename : null;
 
     try {
         const candidate = await Candidate.findByPk(id);
         if (!candidate) {
-
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            // Delete uploaded image from Cloudinary if candidate not found
+            if (req.file && req.file.public_id) {
+                await deleteImageFromCloudinary(req.file.public_id);
             }
             return res.status(404).json({ msg: 'Candidate not found' });
         }
 
-
-        if (photo && candidate.photo) {
-            fs.unlinkSync(`public/uploads/candidates/${candidate.photo}`);
+        // Delete old photo from Cloudinary if a new one is uploaded
+        if (req.file && candidate.photo_public_id) {
+            await deleteImageFromCloudinary(candidate.photo_public_id);
         }
-
 
         candidate.first_name = first_name || candidate.first_name;
         candidate.middle_name = middle_name || candidate.middle_name;
         candidate.last_name = last_name || candidate.last_name;
-        candidate.photo = photo || candidate.photo;
-
-        console.log('Candidate:', candidate);
+        candidate.photo = req.file ? req.file.path : candidate.photo;
+        candidate.photo_public_id = req.file ? req.file.public_id : candidate.photo_public_id;
 
         await candidate.save();
 
         res.json({ msg: 'Candidate updated', candidate });
     } catch (err) {
         console.error('Update Candidate error:', err);
+        // Delete uploaded image from Cloudinary in case of error
+        if (req.file && req.file.public_id) {
+            await deleteImageFromCloudinary(req.file.public_id);
+        }
         res.status(500).json({ msg: 'Server error' });
     }
 };
 
-
 exports.deleteCandidate = async (req, res) => {
-
     if (req.user.role !== 'admin') {
         return res.status(403).json({ msg: 'Access denied' });
     }
@@ -226,9 +198,9 @@ exports.deleteCandidate = async (req, res) => {
             return res.status(404).json({ msg: 'Candidate not found' });
         }
 
-
-        if (candidate.photo) {
-            fs.unlinkSync(`public/uploads/candidates/${candidate.photo}`);
+        // Delete the candidate's photo from Cloudinary
+        if (candidate.photo_public_id) {
+            await deleteImageFromCloudinary(candidate.photo_public_id);
         }
 
         await candidate.destroy();

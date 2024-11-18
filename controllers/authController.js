@@ -1,9 +1,10 @@
 
 
-const { User } = require('../models');
+const { User, VotingYear, Position, Vote } = require('../models');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { validationResult } = require('express-validator');
+const { Op } = require('sequelize');
 
 const register = async (req, res) => {
 

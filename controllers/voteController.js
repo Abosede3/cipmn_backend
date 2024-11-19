@@ -4,7 +4,7 @@ const { Op } = require('sequelize');
 
 
 exports.castVote = async (req, res) => {
-    
+    console.log('user: ' + req.user.id);
     if (req.user.role !== 'member') {
         return res.status(403).json({ msg: 'Only members can cast votes' });
     }
@@ -16,7 +16,7 @@ exports.castVote = async (req, res) => {
     }
 
     const { candidate_id } = req.body;
-    const user_id = req.user.userId;
+    const user_id = req.user.id;
 
     try {
         

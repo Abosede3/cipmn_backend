@@ -12,6 +12,7 @@ const router = express.Router();
 
 const userController = require('../controllers/userController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const uploadCsvMiddleware = require('../middlewares/uploadCsvMiddleware');
 const { createUserValidation, updateUserValidation } = require('../validators/userValidator');
 const validationResultHandler = require('../middlewares/validationResultHandler');
 
@@ -204,5 +205,60 @@ router.put(
  *         description: Server error
  */
 router.delete('/:id', authMiddleware, userController.deleteUser);
+
+
+/**
+ * @swagger
+ * /users/import:
+ *   post:
+ *     summary: Import users from a CSV file
+ *     tags:
+ *       - Users
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               csvfile:
+ *                 type: string
+ *                 format: binary
+ *                 description: CSV file containing user data
+ *     responses:
+ *       200:
+ *         description: Users imported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                 createdUsersCount:
+ *                   type: integer
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       email:
+ *                         type: string
+ *                       msg:
+ *                         type: string
+ *       400:
+ *         description: Bad request
+ *       403:
+ *         description: Access denied
+ *       500:
+ *         description: Server error
+ */
+router.post(
+  '/import',
+  uploadCsvMiddleware,
+  userController.importUsersFromCsv
+);
 
 module.exports = router;

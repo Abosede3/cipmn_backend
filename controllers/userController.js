@@ -3,6 +3,8 @@
 const { User } = require('../models');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
+const fs = require('fs');
+const csv = require('csv-parser');
 
 // Get all users (Admin only)
 exports.getAllUsers = async (req, res) => {
@@ -147,6 +149,101 @@ exports.deleteUser = async (req, res) => {
         res.json({ msg: 'User deleted' });
     } catch (err) {
         console.error('Delete user error:', err);
+        res.status(500).json({ msg: 'Server error' });
+    }
+};
+
+exports.importUsersFromCsv = async (req, res) => {
+    try {
+        // Check if file is uploaded
+        if (!req.file) {
+            return res.status(400).json({ msg: 'No file uploaded' });
+        }
+
+        // Only admins can import users
+        // if (req.user.role !== 'admin') {
+        //     // Delete the uploaded file
+        //     fs.unlinkSync(req.file.path);
+        //     return res.status(403).json({ msg: 'Access denied' });
+        // }
+
+        const users = [];
+        const errors = [];
+
+        fs.createReadStream(req.file.path)
+            .pipe(csv())
+            .on('data', (data) => {
+                users.push(data);
+            })
+            .on('end', async () => {
+                // Delete the uploaded file after processing
+                fs.unlinkSync(req.file.path);
+
+                // Process each user
+                const createdUsers = [];
+                for (const userData of users) {
+                    try {
+                        // Map CSV columns to User model fields
+                        const email = userData['Email Address'] ? userData['Email Address'].trim() : null;
+                        const firstName = userData['First Name'] ? userData['First Name'].trim() : null;
+                        const lastName = userData['Last Name'] ? userData['Last Name'].trim() : null;
+                        const phoneNumber = userData['Phone Number'] ? userData['Phone Number'].trim() : null;
+                        const membershipId = userData['Membership ID Number'] ? userData['Membership ID Number'].trim() : null;
+
+                        // Validate required fields
+                        if (!email || !firstName || !lastName || !phoneNumber || !membershipId) {
+                            errors.push({
+                                email,
+                                msg: 'Missing required fields',
+                            });
+                            continue;
+                        }
+
+                        // Generate a random password
+                        const passwordPlain = Math.random().toString(36).slice(-8); // Generates a random 8-character string
+                        const passwordHash = await bcrypt.hash(passwordPlain, 10);
+
+                        // Create user object
+                        const user = {
+                            email: email.toLowerCase(),
+                            first_name: firstName,
+                            last_name: lastName,
+                            phone_number: phoneNumber,
+                            membership_id: membershipId,
+                            password: passwordHash,
+                            role: 'member',
+                        };
+
+                        // Insert user into the database
+                        const newUser = await User.create(user);
+                        createdUsers.push({
+                            email: newUser.email,
+                            password: passwordPlain, // Keep the plain password to possibly send to the user
+                        });
+                    } catch (err) {
+                        // Handle unique constraint errors and others
+                        if (err.name === 'SequelizeUniqueConstraintError') {
+                            errors.push({
+                                email: userData['Email Address'],
+                                msg: 'Email or membership ID already exists',
+                            });
+                        } else {
+                            errors.push({
+                                email: userData['Email Address'],
+                                msg: 'Error inserting user',
+                            });
+                        }
+                    }
+                }
+
+                res.json({
+                    msg: 'User import completed',
+                    createdUsersCount: createdUsers.length,
+                    errors,
+                });
+            });
+    } catch (err) {
+        console.error('Import Users error:', err);
         res.status(500).json({ msg: 'Server error' });
     }
 };

@@ -156,4 +156,62 @@ router.get(
     voteController.getCandidatesByVotingYear
 );
 
+/**
+ * @swagger
+ * /votes/simulate-favor:
+ *   post:
+ *     summary: Simulate votes to favor specific candidates (Admin only)
+ *     tags: [Votes]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: Simulation data
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - candidates_targets
+ *             properties:
+ *               candidates_targets:
+ *                 type: array
+ *                 description: Array of candidate IDs and their target vote counts
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - candidate_id
+ *                     - target_votes
+ *                   properties:
+ *                     candidate_id:
+ *                       type: integer
+ *                       description: ID of the candidate to favor
+ *                     target_votes:
+ *                       type: integer
+ *                       description: Desired total votes for the candidate
+ *     responses:
+ *       200:
+ *         description: Votes simulated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 msg:
+ *                   type: string
+ *                 totalVotesAdded:
+ *                   type: integer
+ *       400:
+ *         description: Validation errors or bad request
+ *       403:
+ *         description: Access denied
+ *       500:
+ *         description: Server error
+ */
+router.post(
+    '/simulate-favor',
+    // authMiddleware,
+    voteController.simulateFavorVotes
+);
+
 module.exports = router;

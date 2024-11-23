@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "zldlhste_cipmn",
-    "password": "HelloMotor@12.",
-    "database": "zldlhste_cipmn",
-    "host": "162.144.14.62",
+    "username": "root",
+    "password": null,
+    "database": "cipmn",
+    "host": "127.0.0.1",
     "dialect": "mysql"
   },
   "test": {

@@ -192,7 +192,7 @@ exports.getWinners = async (req, res) => {
                     position: position.name,
                     winner: {
                         id: winner.id,
-                        name: `${winner.first_name} ${winner.last_name}`,
+                        name: `${winner.title} ${winner.first_name} ${winner.middle_name} ${winner.last_name}`,
                         votes: winner.dataValues.vote_count,
                     },
                 };

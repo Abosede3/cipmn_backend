@@ -138,25 +138,25 @@ exports.getWinners = async (req, res) => {
         const positions = await Position.findAll({
             where: { voting_year_id: votingYearId },
             include: [
-              {
-                model: Candidate,
-                attributes: [
-                  'id',
-                  'first_name',
-                  'last_name',
-                  [Sequelize.fn('COUNT', Sequelize.col('Candidates->Votes.candidate_id')), 'vote_count'],
-                ],
-                include: [
-                  {
-                    model: Vote,
-                    attributes: [],
-                  },
-                ],
-              },
+                {
+                    model: Candidate,
+                    attributes: [
+                        'id',
+                        'first_name',
+                        'last_name',
+                        [Sequelize.fn('COUNT', Sequelize.col('Candidates->Votes.candidate_id')), 'vote_count'],
+                    ],
+                    include: [
+                        {
+                            model: Vote,
+                            attributes: [],
+                        },
+                    ],
+                },
             ],
             group: ['Position.id', 'Candidates.id'],
-          });
-          
+        });
+
 
         const winners = await Promise.all(
             positions.map(async (position) => {
@@ -297,7 +297,7 @@ exports.simulateFavorVotes = async (req, res) => {
         });
 
         console.log('here 3:')
-        
+
         const candidatesById = {};
         allCandidates.forEach((candidate) => {
             candidatesById[candidate.id] = candidate;

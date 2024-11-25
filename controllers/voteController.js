@@ -142,7 +142,9 @@ exports.getWinners = async (req, res) => {
                     model: Candidate,
                     attributes: [
                         'id',
+                        'title',
                         'first_name',
+                        'middle_name',
                         'last_name',
                         [Sequelize.fn('COUNT', Sequelize.col('Candidates->Votes.candidate_id')), 'vote_count'],
                     ],
@@ -165,7 +167,9 @@ exports.getWinners = async (req, res) => {
                     where: { position_id: position.id },
                     attributes: [
                         'id',
+                        'title',
                         'first_name',
+                        'middle_name',
                         'last_name',
                         [
                             Sequelize.fn('COUNT', Sequelize.col('Votes.candidate_id')),

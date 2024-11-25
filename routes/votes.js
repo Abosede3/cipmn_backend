@@ -208,10 +208,10 @@ router.get(
  *       500:
  *         description: Server error
  */
-router.post(
-    '/simulate-favor',
-    // authMiddleware,
-    voteController.simulateFavorVotes
-);
+// router.post(
+//     '/simulate-favor',
+//     // authMiddleware,
+//     voteController.simulateFavorVotes
+// );
 
 module.exports = router;

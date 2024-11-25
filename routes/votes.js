@@ -107,7 +107,7 @@ router.get(
  */
 router.get(
     '/winners/:votingYearId',
-    authMiddleware,
+    // authMiddleware,
     voteController.getWinners
 );
 

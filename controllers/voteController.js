@@ -102,39 +102,61 @@ exports.getResults = async (req, res) => {
 
 exports.getWinners = async (req, res) => {
 
-    if (req.user.role !== 'admin') {
-        return res.status(403).json({ msg: 'Access denied' });
-    }
+    // if (req.user.role !== 'admin') {
+    //     return res.status(403).json({ msg: 'Access denied' });
+    // }
 
     const { votingYearId } = req.params;
 
     try {
 
+        // const positions = await Position.findAll({
+        //     where: { voting_year_id: votingYearId },
+        //     include: [
+        //         {
+        //             model: Candidate,
+        //             include: [
+        //                 {
+        //                     model: Vote,
+        //                     attributes: [],
+        //                 },
+        //             ],
+        //             attributes: [
+        //                 'id',
+        //                 'first_name',
+        //                 'last_name',
+        //                 [
+        //                     Sequelize.fn('COUNT', Sequelize.col('Votes.candidate_id')),
+        //                     'vote_count',
+        //                 ],
+        //             ],
+        //             group: ['Candidate.id'],
+        //         },
+        //     ],
+        // });
+
         const positions = await Position.findAll({
             where: { voting_year_id: votingYearId },
             include: [
-                {
-                    model: Candidate,
-                    include: [
-                        {
-                            model: Vote,
-                            attributes: [],
-                        },
-                    ],
-                    attributes: [
-                        'id',
-                        'first_name',
-                        'last_name',
-                        [
-                            Sequelize.fn('COUNT', Sequelize.col('Votes.candidate_id')),
-                            'vote_count',
-                        ],
-                    ],
-                    group: ['Candidate.id'],
-                },
+              {
+                model: Candidate,
+                attributes: [
+                  'id',
+                  'first_name',
+                  'last_name',
+                  [Sequelize.fn('COUNT', Sequelize.col('Candidates->Votes.candidate_id')), 'vote_count'],
+                ],
+                include: [
+                  {
+                    model: Vote,
+                    attributes: [],
+                  },
+                ],
+              },
             ],
-        });
-
+            group: ['Position.id', 'Candidates.id'],
+          });
+          
 
         const winners = await Promise.all(
             positions.map(async (position) => {

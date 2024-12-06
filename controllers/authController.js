@@ -136,9 +136,9 @@ const login = async (req, res) => {
             });
 
             // Check if the user has voted for all positions
-            if (userVotes.length === positionIds.length) {
-                return res.status(400).json({ msg: 'You have already voted for all positions' });
-            }
+            // if (userVotes.length === positionIds.length) {
+            //     return res.status(400).json({ msg: 'You have already voted for all positions' });
+            // }
         }
 
         // Generate JWT token
